@@ -5,17 +5,57 @@ $password = 'password123';
 $dbname = 'world';
 
 if($_SERVER['REQUEST_METHOD'] === 'GET' ){
-  if((isset($_GET['country']) or !empty($_GET['country'])) ){
+  if(empty($_GET['context']) and (isset($_GET['country']) or !empty($_GET['country'])) ){
     $country = filter_var($_GET['country'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);;
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $stmt = $conn->query("SELECT * FROM countries WHERE name LIKE '%$country%'");
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
+
+    echo "<table>";
+    echo "<tr>";
+    echo "<th>Country Name</th>";
+    echo "<th>Continent</th>";
+    echo "<th>Independence Year</th>";
+    echo "<th>Head of State</th>";
+    echo "</tr>";
+    foreach($results as $row) {
+        $countryName = $row['name'];
+        $continent = $row['continent'];
+        $independence= $row['independence_year'];
+        $HOState = $row['head_of_state'];
+        echo "<tr>";
+        echo "<td>$countryName</td>";
+        echo "<td>$continent</td>";
+        echo "<td>$independence</td>";
+        echo "<td>$HOState</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
+    }
+}
+
+if ((isset($_GET['context']) or !empty($_GET['context']))) {
+    $country = filter_var($_GET['country'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $stmt = $conn->query("SELECT cities.name, cities.district,cities.population FROM countries LEFT JOIN cities ON countries.code = cities.country_code WHERE countries.name LIKE '%$country%'");
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo "<table>";
+    echo "<tr>";
+    echo "<th>Name</th>";
+    echo "<th>District</th>";
+    echo "<th>Population</th>";
+    echo "</tr>";
+    foreach($results as $row) {
+        $city = $row['name'];
+        $district = $row['district'];
+        $population = $row['population'];
+        echo "<tr>";
+        echo "<td>$city</td>";
+        echo "<td>$district</td>";
+        echo "<td>$population</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
 }
 ?>
-
-<ul>
-<?php foreach ($results as $row): ?>
-  <li><?= $row['name'] . ' is ruled by ' . $row['head_of_state']; ?></li>
-<?php endforeach; ?>
-</ul>
